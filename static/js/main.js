@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Add template change listener
-    const templateSelect = document.getElementById('template');
+        const templateSelect = document.getElementById('template');
     if (templateSelect) {
         templateSelect.addEventListener('change', updateContentSections);
     }
@@ -54,24 +54,24 @@ function updateContentSections() {
         const sections = TEMPLATES[templateKey].sections;
         
         sections.forEach(section => {
-            const sectionDiv = document.createElement('div');
-            sectionDiv.className = 'content-section';
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'content-section';
             sectionDiv.setAttribute('data-section', section);
-            
-            const displayName = section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            
-            sectionDiv.innerHTML = `
-                <h4>${displayName}</h4>
-                <div class="form-group">
+        
+        const displayName = section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        sectionDiv.innerHTML = `
+            <h4>${displayName}</h4>
+            <div class="form-group">
                     <textarea name="content_${section}" rows="6" placeholder="Enter ${displayName} content..."></textarea>
-                </div>
+            </div>
                 <div class="feature-buttons">
                     <button type="button" onclick="addTable('${section}')" class="feature-btn">📊 Add Table</button>
                     <button type="button" onclick="addChart('${section}')" class="feature-btn">📈 Add Chart</button>
                     <button type="button" onclick="addCodeBlock('${section}')" class="feature-btn">💻 Add Code</button>
-                </div>
-            `;
-            
+            </div>
+        `;
+        
             templateSections.appendChild(sectionDiv);
         });
     }
@@ -92,16 +92,98 @@ function addTable(sectionName) {
             <div class="form-group">
                 <input type="text" name="table_title_${tableId}" placeholder="Table Title" class="feature-input">
             </div>
+        <div class="form-group">
+                <label>Number of Columns:</label>
+                <input type="number" id="col_count_${tableId}" min="1" max="10" value="3" class="feature-input" onchange="updateTableInputs('${tableId}')">
+        </div>
             <div class="form-group">
-                <input type="text" name="table_headers_${tableId}" placeholder="Headers (comma separated)" class="feature-input">
-            </div>
+                <label>Number of Rows:</label>
+                <input type="number" id="row_count_${tableId}" min="1" max="20" value="3" class="feature-input" onchange="updateTableInputs('${tableId}')">
+        </div>
             <div class="form-group">
-                <textarea name="table_data_${tableId}" rows="4" placeholder="Data (one row per line, comma separated)" class="feature-textarea"></textarea>
+                <label>Headers:</label>
+                <div id="headers_${tableId}" class="table-input-grid"></div>
+        </div>
+        <div class="form-group">
+                <label>Data:</label>
+                <div id="data_${tableId}" class="table-input-grid"></div>
             </div>
+            <input type="hidden" name="table_data_${tableId}" id="table_data_hidden_${tableId}">
         </div>
     `;
     
     section.insertAdjacentHTML('beforeend', tableHtml);
+    updateTableInputs(tableId);
+}
+
+// Update table input fields
+function updateTableInputs(tableId) {
+    const colCount = parseInt(document.getElementById(`col_count_${tableId}`).value) || 3;
+    const rowCount = parseInt(document.getElementById(`row_count_${tableId}`).value) || 3;
+    
+    // Update headers
+    const headersDiv = document.getElementById(`headers_${tableId}`);
+    headersDiv.innerHTML = '';
+    headersDiv.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
+    
+    for (let i = 0; i < colCount; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'table-cell-input';
+        input.placeholder = `Header ${i + 1}`;
+        input.onchange = () => updateTableData(tableId);
+        headersDiv.appendChild(input);
+    }
+    
+    // Update data rows
+    const dataDiv = document.getElementById(`data_${tableId}`);
+    dataDiv.innerHTML = '';
+    dataDiv.style.gridTemplateColumns = `repeat(${colCount}, 1fr)`;
+    
+    for (let row = 0; row < rowCount; row++) {
+        for (let col = 0; col < colCount; col++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'table-cell-input';
+            input.placeholder = `Row ${row + 1}, Col ${col + 1}`;
+            input.onchange = () => updateTableData(tableId);
+            dataDiv.appendChild(input);
+        }
+    }
+    
+    updateTableData(tableId);
+}
+
+// Update hidden table data field
+function updateTableData(tableId) {
+    const colCount = parseInt(document.getElementById(`col_count_${tableId}`).value) || 3;
+    const rowCount = parseInt(document.getElementById(`row_count_${tableId}`).value) || 3;
+    
+    // Collect headers
+    const headerInputs = document.querySelectorAll(`#headers_${tableId} input`);
+    const headers = Array.from(headerInputs).map(input => input.value || `Column ${input.placeholder.split(' ')[1]}`);
+    
+    // Collect data
+    const dataInputs = document.querySelectorAll(`#data_${tableId} input`);
+    const data = [];
+    
+    for (let row = 0; row < rowCount; row++) {
+        const rowData = [];
+        for (let col = 0; col < colCount; col++) {
+            const input = dataInputs[row * colCount + col];
+            rowData.push(input.value || '');
+        }
+        data.push(rowData);
+    }
+    
+    // Create table structure
+    const tableStructure = {
+        headers: headers,
+        rows: data
+    };
+    
+    // Store in hidden field
+    document.getElementById(`table_data_hidden_${tableId}`).value = JSON.stringify(tableStructure);
 }
 
 // Add chart functionality
@@ -112,30 +194,90 @@ function addChart(sectionName) {
     const chartId = `chart_${Date.now()}`;
     const chartHtml = `
         <div class="feature-container" id="${chartId}">
-            <div class="feature-header">
+        <div class="feature-header">
                 <h5>📈 Chart</h5>
                 <button type="button" onclick="removeFeature('${chartId}')" class="remove-btn">✕</button>
-            </div>
-            <div class="form-group">
+        </div>
+        <div class="form-group">
                 <select name="chart_type_${chartId}" class="feature-input">
                     <option value="bar">Bar Chart</option>
                     <option value="pie">Pie Chart</option>
                     <option value="line">Line Chart</option>
-                </select>
-            </div>
-            <div class="form-group">
+            </select>
+        </div>
+        <div class="form-group">
                 <input type="text" name="chart_title_${chartId}" placeholder="Chart Title" class="feature-input">
             </div>
             <div class="form-group">
-                <input type="text" name="chart_labels_${chartId}" placeholder="Labels (comma separated)" class="feature-input">
+                <label>Number of Data Points:</label>
+                <input type="number" id="chart_points_${chartId}" min="2" max="20" value="5" class="feature-input" onchange="updateChartInputs('${chartId}')">
+        </div>
+        <div class="form-group">
+                <label>Labels:</label>
+                <div id="chart_labels_${chartId}" class="chart-input-grid"></div>
+        </div>
+        <div class="form-group">
+                <label>Values:</label>
+                <div id="chart_values_${chartId}" class="chart-input-grid"></div>
             </div>
-            <div class="form-group">
-                <input type="text" name="chart_values_${chartId}" placeholder="Values (comma separated)" class="feature-input">
-            </div>
+            <input type="hidden" name="chart_labels_${chartId}" id="chart_labels_hidden_${chartId}">
+            <input type="hidden" name="chart_values_${chartId}" id="chart_values_hidden_${chartId}">
         </div>
     `;
     
     section.insertAdjacentHTML('beforeend', chartHtml);
+    updateChartInputs(chartId);
+}
+
+// Update chart input fields
+function updateChartInputs(chartId) {
+    const pointCount = parseInt(document.getElementById(`chart_points_${chartId}`).value) || 5;
+    
+    // Update labels
+    const labelsDiv = document.getElementById(`chart_labels_${chartId}`);
+    labelsDiv.innerHTML = '';
+    
+    for (let i = 0; i < pointCount; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'chart-cell-input';
+        input.placeholder = `Label ${i + 1}`;
+        input.onchange = () => updateChartData(chartId);
+        labelsDiv.appendChild(input);
+    }
+    
+    // Update values
+    const valuesDiv = document.getElementById(`chart_values_${chartId}`);
+    valuesDiv.innerHTML = '';
+    
+    for (let i = 0; i < pointCount; i++) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'chart-cell-input';
+        input.placeholder = `Value ${i + 1}`;
+        input.step = '0.1';
+        input.onchange = () => updateChartData(chartId);
+        valuesDiv.appendChild(input);
+    }
+    
+    updateChartData(chartId);
+}
+
+// Update hidden chart data fields
+function updateChartData(chartId) {
+    const pointCount = parseInt(document.getElementById(`chart_points_${chartId}`).value) || 5;
+    
+    // Collect labels
+    const labelInputs = document.querySelectorAll(`#chart_labels_${chartId} input`);
+    const labels = Array.from(labelInputs).map(input => input.value || `Point ${input.placeholder.split(' ')[1]}`);
+    
+    // Collect values
+    const valueInputs = document.querySelectorAll(`#chart_values_${chartId} input`);
+    const values = Array.from(valueInputs).map(input => input.value || '0');
+    
+    // Store in hidden fields
+    document.getElementById(`chart_labels_hidden_${chartId}`).value = labels.join(',');
+    document.getElementById(`chart_values_hidden_${chartId}`).value = values.join(',');
 }
 
 // Add code block functionality
@@ -146,7 +288,7 @@ function addCodeBlock(sectionName) {
     const codeId = `code_${Date.now()}`;
     const codeHtml = `
         <div class="feature-container" id="${codeId}">
-            <div class="feature-header">
+        <div class="feature-header">
                 <h5>💻 Code Block</h5>
                 <button type="button" onclick="removeFeature('${codeId}')" class="remove-btn">✕</button>
             </div>
@@ -161,8 +303,8 @@ function addCodeBlock(sectionName) {
                     <option value="sql">SQL</option>
                     <option value="text">Text</option>
                 </select>
-            </div>
-            <div class="form-group">
+        </div>
+        <div class="form-group">
                 <textarea name="code_content_${codeId}" rows="6" placeholder="Enter your code here..." class="feature-textarea"></textarea>
             </div>
         </div>
@@ -176,7 +318,7 @@ function removeFeature(id) {
     const element = document.getElementById(id);
     if (element) {
         element.remove();
-    }
+}
 }
 
 async function handleSubmit(event) {
@@ -238,10 +380,22 @@ async function handleSubmit(event) {
             
             if (containerId.startsWith('table_')) {
                 if (!data.tables[sectionName]) data.tables[sectionName] = [];
+                
+                // Parse the JSON table data
+                let tableStructure = { headers: [], rows: [] };
+                try {
+                    const tableDataJson = formData.get(`table_data_${containerId}`);
+                    if (tableDataJson) {
+                        tableStructure = JSON.parse(tableDataJson);
+                    }
+                } catch (e) {
+                    console.error('Error parsing table data:', e);
+                }
+                
                 const tableData = {
                     title: formData.get(`table_title_${containerId}`) || 'Table',
-                    headers: formData.get(`table_headers_${containerId}`) || '',
-                    data: formData.get(`table_data_${containerId}`) || ''
+                    headers: tableStructure.headers,
+                    data: tableStructure.rows
                 };
                 data.tables[sectionName].push(tableData);
             } else if (containerId.startsWith('chart_')) {
@@ -287,7 +441,7 @@ async function handleSubmit(event) {
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
-
+        
         submitButton.textContent = originalText;
         submitButton.disabled = false;
     } catch (error) {
@@ -297,7 +451,7 @@ async function handleSubmit(event) {
         const submitButton = event.target.querySelector('button[type="submit"]');
         if (submitButton) {
             submitButton.textContent = originalText || 'Generate Document';
-            submitButton.disabled = false;
+        submitButton.disabled = false;
         }
     }
 } 

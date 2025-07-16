@@ -135,10 +135,9 @@ def generate_document():
                     print("Created chart data:", chart_data)  # Debug print
                     
                     doc_generator.add_chart(
-                        section=section,
-                        chart_type=chart.get('type', 'bar'),
-                        data=chart_data,
-                        title=chart.get('title', '')
+                        section,
+                        chart.get('type', 'bar'),
+                        chart_data
                     )
         
         # Add tables if provided
@@ -157,27 +156,19 @@ def generate_document():
                     
                     print("Processing table:", table_info)  # Debug print
                     
-                    # Process headers
+                    # Process headers and data from the new table structure
                     headers = []
-                    if isinstance(table_info.get('headers'), str):
-                        headers = [h.strip() for h in table_info['headers'].split(',') if h.strip()]
-                    elif isinstance(table_info.get('headers'), list):
-                        headers = [str(h) for h in table_info['headers']]  # Convert all headers to strings
-                    
-                    # Process data rows
                     data_rows = []
-                    table_data = table_info.get('data', [])
                     
-                    if isinstance(table_data, str):
-                        # Handle string data (CSV format)
-                        # Split by newline first, then by comma
-                        rows = [row.strip() for row in table_data.split(',') if row.strip()]
-                        for row in rows:
-                            cells = [cell.strip() for cell in row.split(',') if cell.strip()]
-                            if cells:  # Only add non-empty rows
-                                data_rows.append(cells)
-                    elif isinstance(table_data, list):
-                        # Handle list data
+                    # Handle headers
+                    if isinstance(table_info.get('headers'), list):
+                        headers = [str(h) for h in table_info['headers']]
+                    elif isinstance(table_info.get('headers'), str):
+                        headers = [h.strip() for h in table_info['headers'].split(',') if h.strip()]
+                    
+                    # Handle data rows
+                    table_data = table_info.get('data', [])
+                    if isinstance(table_data, list):
                         for row in table_data:
                             if isinstance(row, list):
                                 # Row is already a list
@@ -190,6 +181,13 @@ def generate_document():
                             else:
                                 # Single value row
                                 data_rows.append([str(row)])
+                    elif isinstance(table_data, str):
+                        # Fallback for string data (CSV format)
+                        rows = [row.strip() for row in table_data.split('\n') if row.strip()]
+                        for row in rows:
+                            cells = [cell.strip() for cell in row.split(',') if cell.strip()]
+                            if cells:
+                                data_rows.append(cells)
                     
                     # Construct final table data
                     final_table_data = []

@@ -513,6 +513,27 @@ class DocumentPage(PageTemplate):
 class EnhancedDocumentGenerator:
     def __init__(self):
         self.styles = getSampleStyleSheet()
+        # Create custom header style with more spacing
+        self.styles.add(ParagraphStyle(
+            name='CustomHeader',
+            parent=self.styles['Heading1'],
+            fontSize=16,
+            spaceAfter=25,  # Increased space after header
+            spaceBefore=20,  # Added space before header
+            leading=24,      # Increased line height
+            textColor=HexColor("#2C3E50")
+        ))
+        
+        # Create custom underline style
+        self.styles.add(ParagraphStyle(
+            name='Underline',
+            parent=self.styles['Normal'],
+            fontSize=1,      # Very thin line
+            leading=0,       # Minimal line height
+            spaceBefore=0,   # No space before
+            spaceAfter=15,   # Space after underline
+            textColor=HexColor("#BDC3C7")  # Lighter color for underline
+        ))
         self.user_data = {}
         self.template = None
         self.colors = None
@@ -538,22 +559,58 @@ class EnhancedDocumentGenerator:
     
     def add_chart(self, section, chart_type, data, **kwargs):
         """Add a chart to a section"""
-        if chart_type == 'bar':
-            chart_buffer = self.chart_maker.create_bar_chart(**data, **kwargs)
-        elif chart_type == 'pie':
-            chart_buffer = self.chart_maker.create_pie_chart(**data, **kwargs)
-        elif chart_type == 'line':
-            chart_buffer = self.chart_maker.create_line_chart(**data, **kwargs)
-        elif chart_type == 'scatter':
-            chart_buffer = self.chart_maker.create_scatter_plot(**data, **kwargs)
-        
-        if section not in self.charts:
-            self.charts[section] = []
-        self.charts[section].append({
-            'type': chart_type,
-            'buffer': chart_buffer,
-            'title': kwargs.get('title', f'{chart_type.title()} Chart')
-        })
+        try:
+            if chart_type == 'bar':
+                chart_buffer = self.chart_maker.create_bar_chart(
+                    data=data.get('values', []),
+                    labels=data.get('labels', []),
+                    title=data.get('title', 'Bar Chart'),
+                    xlabel=data.get('xlabel', 'Categories'),
+                    ylabel=data.get('ylabel', 'Values')
+                )
+            elif chart_type == 'pie':
+                chart_buffer = self.chart_maker.create_pie_chart(
+                    data=data.get('values', []),
+                    labels=data.get('labels', []),
+                    title=data.get('title', 'Pie Chart')
+                )
+            elif chart_type == 'line':
+                chart_buffer = self.chart_maker.create_line_chart(
+                    x_data=data.get('labels', []),
+                    y_data=data.get('values', []),
+                    title=data.get('title', 'Line Chart'),
+                    xlabel=data.get('xlabel', 'X Axis'),
+                    ylabel=data.get('ylabel', 'Y Axis')
+                )
+            elif chart_type == 'scatter':
+                chart_buffer = self.chart_maker.create_scatter_plot(
+                    x_data=data.get('labels', []),
+                    y_data=data.get('values', []),
+                    title=data.get('title', 'Scatter Plot'),
+                    xlabel=data.get('xlabel', 'X Axis'),
+                    ylabel=data.get('ylabel', 'Y Axis')
+                )
+            else:
+                print(f"Warning: Unknown chart type: {chart_type}")
+                return
+            
+            if section not in self.charts:
+                self.charts[section] = []
+            self.charts[section].append({
+                'type': chart_type,
+                'buffer': chart_buffer,
+                'title': data.get('title', f'{chart_type.title()} Chart')
+            })
+        except Exception as e:
+            print(f"Error creating chart: {e}")
+            # Create a simple error chart
+            if section not in self.charts:
+                self.charts[section] = []
+            self.charts[section].append({
+                'type': 'error',
+                'buffer': None,
+                'title': f'Error creating {chart_type} chart'
+            })
     
     def add_table(self, section, data, title="Table"):
         """Add a table to a section with improved structure and spacing
@@ -597,43 +654,48 @@ class EnhancedDocumentGenerator:
         # Create table with calculated widths
         table = Table(table_data, colWidths=col_widths)
         
+        # Debug: Print table data for verification
+        print(f"Table data for {section}: {table_data}")
+        print(f"Table has {len(table_data)} rows and {len(table_data[0]) if table_data else 0} columns")
+        
         # Create professional table style with improved spacing
         table_style = TableStyle([
-            # Header styling
+            # Header styling - separate from content with MUCH more padding
             ('BACKGROUND', (0, 0), (-1, 0), HexColor(self.colors['primary'])),
             ('TEXTCOLOR', (0, 0), (-1, 0), white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 11),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('TOPPADDING', (0, 0), (-1, 0), 20),  # Much more padding for headers
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 20),  # Much more padding for headers
+            ('LEFTPADDING', (0, 0), (-1, 0), 12),  # Much more padding for headers
+            ('RIGHTPADDING', (0, 0), (-1, 0), 12),  # Much more padding for headers
             
-            # Content styling
+            # Content styling - separate from headers
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 1), (-1, -1), 10),
             ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
             ('TEXTCOLOR', (0, 1), (-1, -1), HexColor(self.colors['text'])),
+            ('TOPPADDING', (0, 1), (-1, -1), 12),  # Content padding
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 12),  # Content padding
+            ('LEFTPADDING', (0, 1), (-1, -1), 8),  # Content padding
+            ('RIGHTPADDING', (0, 1), (-1, -1), 8),  # Content padding
             
-            # Borders
-            ('GRID', (0, 0), (-1, -1), 0.5, HexColor(self.colors['border'])),
+            # Borders - thinner for better appearance
+            ('GRID', (0, 0), (-1, -1), 0.25, HexColor(self.colors['border'])),
             ('LINEBELOW', (0, 0), (-1, 0), 1, HexColor(self.colors['primary'])),
             
-            # Cell padding
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('LEFTPADDING', (0, 0), (-1, -1), 6),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-            
-            # Spacing between rows
-            ('LEADING', (0, 0), (-1, -1), 12),
+            # Spacing between rows - increased for better readability
+            ('LEADING', (0, 0), (-1, -1), 18),
         ])
         
         table.setStyle(table_style)
         
-        # Add spacer before table
+        # Add spacer before table and ensure proper spacing
         self.tables[section].append({
             'table': table,
             'title': title,
-            'spacer': Spacer(1, 0.2*inch)  # Add space before table
+            'spacer': Spacer(1, 0.3*inch)  # Increased space before table
         })
     
     def add_flowchart(self, section, nodes, edges, title):
@@ -773,106 +835,21 @@ class EnhancedDocumentGenerator:
         story.append(PageBreak())
     
     def create_content_pages(self, story):
-        """Create enhanced content pages with all features"""
-        # Section name mapping for better display
-        section_names = {
-            'introduction': 'Introduction',
-            'main_content': 'Main Content',
-            'analysis': 'Analysis',
-            'conclusion': 'Conclusion',
-            'references': 'References',
-            'project_overview': 'Project Overview',
-            'objectives': 'Objectives',
-            'methodology': 'Methodology',
-            'implementation': 'Implementation',
-            'results': 'Results',
-            'appendix': 'Appendix',
-            'case_overview': 'Case Overview',
-            'problem_analysis': 'Problem Analysis',
-            'solutions': 'Solutions',
-            'recommendations': 'Recommendations',
-            'abstract': 'Abstract',
-            'literature_review': 'Literature Review',
-            'discussion': 'Discussion',
-            'executive_summary': 'Executive Summary',
-            'key_points': 'Key Points',
-            'findings': 'Findings',
-            'objective': 'Objective',
-            'materials': 'Materials',
-            'procedure': 'Procedure',
-            'observations': 'Observations',
-            'calculations': 'Calculations',
-            'business_overview': 'Business Overview',
-            'market_analysis': 'Market Analysis',
-            'strategy': 'Strategy',
-            'financial_plan': 'Financial Plan',
-            'system_overview': 'System Overview',
-            'architecture': 'Architecture',
-            'testing': 'Testing',
-            'deployment': 'Deployment',
-            'maintenance': 'Maintenance'
-        }
-        
-        for section in self.template['sections']:
-            # Section header
-            section_style = ParagraphStyle(
-                'SectionHeader',
-                parent=self.styles['Heading2'],
-                fontSize=18,
-                spaceAfter=15,
-                spaceBefore=25,
-                textColor=HexColor(self.colors['primary']),
-                fontName='Helvetica-Bold'
-            )
-            
-            # Use mapped name or format the section name
-            section_title = section_names.get(section, section.replace('_', ' ').title())
-            story.append(Paragraph(section_title, section_style))
-            
-            # Add section content with proper spacing
-            content = self.content.get(section, '')
-            if content:
-                para_style = ParagraphStyle(
-                    'Content',
-                    parent=self.styles['Normal'],
-                    fontSize=11,
-                    spaceAfter=12,  # Increased spacing after paragraphs
-                    alignment=TA_JUSTIFY,
-                    leading=14
-                )
-                paragraphs = content.split('\n\n')
-                for para in paragraphs:
-                    if para.strip():
-                        story.append(Paragraph(para.strip(), para_style))
-            
-            # Add tables for this section with proper spacing
-            if section in self.tables:
-                for table_info in self.tables[section]:
-                    # Add spacer before table
-                    story.append(Spacer(1, 0.3*inch))
-                    
-                    # Add table title if provided
-                    if table_info.get('title'):
-                        title_style = ParagraphStyle(
-                            'TableTitle',
-                            parent=self.styles['Normal'],
-                            fontSize=12,
-                            textColor=HexColor(self.colors['primary']),
-                            spaceAfter=10,
-                            alignment=TA_LEFT,
-                            fontName='Helvetica-Bold'
-                        )
-                        story.append(Paragraph(table_info['title'], title_style))
-                    
-                    # Add the table
-                    story.append(table_info['table'])
-                    
-                    # Add spacer after table
-                    story.append(Spacer(1, 0.3*inch))
-            
-            # Add spacer after section
-            story.append(Spacer(1, 0.2*inch))
-    
+        """Create the content pages with sections"""
+        for section in self.template["sections"]:
+            if section in self.content and self.content[section]:
+                # Add header with more spacing
+                story.append(Spacer(1, 20))  # Space before section
+                story.append(Paragraph(section.replace('_', ' ').title(), self.styles['CustomHeader']))
+                
+                # Add thin underline with spacing
+                story.append(Paragraph("_" * 80, self.styles['Underline']))
+                
+                # Add content with proper spacing
+                story.append(Spacer(1, 10))  # Space after underline
+                story.append(Paragraph(self.content[section], self.styles['Normal']))
+                story.append(Spacer(1, 20))  # Space after content
+
     def generate_pdf(self, output=None):
         """Generate the enhanced PDF document"""
         if output is None:
