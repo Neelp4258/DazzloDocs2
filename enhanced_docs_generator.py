@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.colors import HexColor, black, white, Color
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image, Flowable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image, Flowable, PageTemplate, Frame
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY, TA_RIGHT
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
@@ -23,55 +23,97 @@ from PIL import Image as PILImage
 from datetime import datetime
 import json
 
-# Enhanced Color Schemes
+# Professional Color Schemes
 COLOR_SCHEMES = {
-    "Classic Blue": {
-        "primary": "#1e40af",
-        "secondary": "#3b82f6",
-        "accent": "#60a5fa",
-        "text": "#1f2937",
-        "background": "#f8fafc",
-        "highlight": "#dbeafe"
+    "professional": {
+        "primary": "#2C3E50",      # Dark blue-gray
+        "secondary": "#34495E",     # Medium blue-gray
+        "accent": "#3498DB",        # Light blue
+        "highlight": "#ECF0F1",     # Light gray
+        "background": "#FFFFFF",    # White
+        "text": "#2C3E50",          # Dark text
+        "border": "#BDC3C7"         # Light gray border
     },
-    "Royal Professional": {
-        "primary": "#1e3a8a",  # Deep blue
-        "secondary": "#dc2626",  # Red
-        "accent": "#4f46e5",    # Indigo
-        "text": "#111827",      # Almost black
-        "background": "#f9fafb",
-        "highlight": "#e5e7eb"
+    "modern": {
+        "primary": "#34495E",       # Slate gray
+        "secondary": "#5D6D7E",     # Medium gray
+        "accent": "#85929E",        # Light gray
+        "highlight": "#F8F9F9",     # Very light gray
+        "background": "#FFFFFF",    # White
+        "text": "#2C3E50",          # Dark text
+        "border": "#D5DBDB"         # Light border
     },
-    "Modern Elegance": {
-        "primary": "#7c3aed",   # Vibrant purple
-        "secondary": "#059669",  # Green
-        "accent": "#2563eb",    # Blue
-        "text": "#1f2937",
-        "background": "#f3f4f6",
-        "highlight": "#e5e7eb"
+    "classic": {
+        "primary": "#2E4053",       # Dark navy
+        "secondary": "#566573",     # Medium gray
+        "accent": "#7F8C8D",        # Light gray
+        "highlight": "#F4F6F6",     # Very light gray
+        "background": "#FFFFFF",    # White
+        "text": "#2C3E50",          # Dark text
+        "border": "#BDC3C7"         # Light border
     },
-    "Corporate Trust": {
-        "primary": "#0369a1",   # Professional blue
-        "secondary": "#b91c1c",  # Dark red
-        "accent": "#1d4ed8",    # Royal blue
-        "text": "#111827",
-        "background": "#f8fafc",
-        "highlight": "#dbeafe"
+    "elegant": {
+        "primary": "#4A5568",       # Charcoal gray
+        "secondary": "#718096",     # Medium gray
+        "accent": "#A0AEC0",        # Light gray
+        "highlight": "#F7FAFC",     # Very light gray
+        "background": "#FFFFFF",    # White
+        "text": "#2D3748",          # Dark text
+        "border": "#E2E8F0"         # Light border
     },
-    "Creative Professional": {
-        "primary": "#4338ca",   # Indigo
-        "secondary": "#ea580c",  # Orange
-        "accent": "#0891b2",    # Cyan
-        "text": "#1f2937",
-        "background": "#f8fafc",
-        "highlight": "#e0f2fe"
+    "tech_blue": {
+        "primary": "#00d4ff",       # Bright cyan
+        "secondary": "#0099cc",     # Medium cyan
+        "accent": "#66e6ff",        # Light cyan
+        "highlight": "#e6f9ff",     # Very light cyan
+        "background": "#FFFFFF",    # White
+        "text": "#003366",          # Dark blue text
+        "border": "#b3e6ff"         # Light cyan border
     },
-    "Executive Impact": {
-        "primary": "#312e81",   # Deep indigo
-        "secondary": "#be123c",  # Rose
-        "accent": "#047857",    # Emerald
-        "text": "#1f2937",
-        "background": "#f9fafb",
-        "highlight": "#f1f5f9"
+    "cyber_purple": {
+        "primary": "#7c3aed",       # Bright purple
+        "secondary": "#5b21b6",     # Medium purple
+        "accent": "#a855f7",        # Light purple
+        "highlight": "#f3e8ff",     # Very light purple
+        "background": "#FFFFFF",    # White
+        "text": "#2e1065",          # Dark purple text
+        "border": "#c4b5fd"         # Light purple border
+    },
+    "neon_green": {
+        "primary": "#10b981",       # Bright green
+        "secondary": "#059669",     # Medium green
+        "accent": "#34d399",        # Light green
+        "highlight": "#ecfdf5",     # Very light green
+        "background": "#FFFFFF",    # White
+        "text": "#064e3b",          # Dark green text
+        "border": "#6ee7b7"         # Light green border
+    },
+    "sunset_orange": {
+        "primary": "#f59e0b",       # Bright orange
+        "secondary": "#d97706",     # Medium orange
+        "accent": "#fbbf24",        # Light orange
+        "highlight": "#fffbeb",     # Very light orange
+        "background": "#FFFFFF",    # White
+        "text": "#78350f",          # Dark orange text
+        "border": "#fcd34d"         # Light orange border
+    },
+    "ocean_teal": {
+        "primary": "#14b8a6",       # Bright teal
+        "secondary": "#0d9488",     # Medium teal
+        "accent": "#5eead4",        # Light teal
+        "highlight": "#f0fdfa",     # Very light teal
+        "background": "#FFFFFF",    # White
+        "text": "#134e4a",          # Dark teal text
+        "border": "#99f6e4"         # Light teal border
+    },
+    "midnight_black": {
+        "primary": "#1f2937",       # Dark gray
+        "secondary": "#374151",     # Medium gray
+        "accent": "#6b7280",        # Light gray
+        "highlight": "#f9fafb",     # Very light gray
+        "background": "#FFFFFF",    # White
+        "text": "#111827",          # Dark text
+        "border": "#d1d5db"         # Light border
     }
 }
 
@@ -274,56 +316,107 @@ class TableMaker:
     
     def create_table(self, data, colWidths=None, style=None):
         """Create a professionally formatted table"""
-        if not colWidths:
-            colWidths = [2*inch] * len(data[0])
+        print("TableMaker.create_table called with data:", data)  # Debug print
         
-        table = Table(data, colWidths=colWidths)
-        
-        if not style:
-            style = TableStyle([
-                # Header styling
-                ('BACKGROUND', (0, 0), (-1, 0), HexColor(self.colors['primary'])),
-                ('TEXTCOLOR', (0, 0), (-1, 0), white),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 12),
-                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-                ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-                
-                # Content styling
-                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 1), (-1, -1), 10),
+        try:
+            # Ensure data is a list of lists
+            if not isinstance(data, list) or not data:
+                print("Invalid or empty data, using default")  # Debug print
+                data = [['No data available']]
+            
+            # Convert all rows to lists and all values to strings
+            processed_data = []
+            for row in data:
+                if isinstance(row, list):
+                    processed_row = [str(cell) if cell is not None else '' for cell in row]
+                else:
+                    processed_row = [str(row) if row is not None else '']
+                processed_data.append(processed_row)
+            
+            data = processed_data
+            
+            # Ensure all rows have the same number of columns
+            max_cols = max(len(row) for row in data)
+            data = [row + [''] * (max_cols - len(row)) for row in data]
+            
+            # Set column widths
+            if not colWidths or not isinstance(colWidths, list) or len(colWidths) != max_cols:
+                colWidths = [2*inch] * max_cols
+            
+            print("Creating table with processed data:", data)  # Debug print
+            table = Table(data, colWidths=colWidths)
+            
+            # Apply table style
+            if not style:
+                style = TableStyle([
+                    # Header styling
+                    ('BACKGROUND', (0, 0), (-1, 0), HexColor(self.colors['primary'])),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), white),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 12),
+                    ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+                    
+                    # Content styling
+                    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 1), (-1, -1), 10),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    
+                    # Borders and spacing
+                    ('GRID', (0, 0), (-1, -1), 1, HexColor(self.colors['secondary'])),
+                    ('TOPPADDING', (0, 0), (-1, -1), 12),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                    
+                    # Alternating row colors
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), 
+                     [HexColor(self.colors['background']), HexColor(self.colors['highlight'])])
+                ])
+            
+            table.setStyle(style)
+            return table
+            
+        except Exception as e:
+            print(f"Error in create_table: {str(e)}")  # Debug print
+            # Return a simple error table
+            error_table = Table([['Error creating table']], colWidths=[6*inch])
+            error_table.setStyle(TableStyle([
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                
-                # Borders and spacing
-                ('GRID', (0, 0), (-1, -1), 1, HexColor(self.colors['secondary'])),
-                ('TOPPADDING', (0, 0), (-1, -1), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-                ('LEFTPADDING', (0, 0), (-1, -1), 8),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-                
-                # Alternating row colors
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), 
-                 [HexColor(self.colors['background']), HexColor(self.colors['highlight'])])
-            ])
-        
-        table.setStyle(style)
-        return table
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ]))
+            return error_table
     
     def create_financial_table(self, data, title):
         """Create a financial table with currency formatting"""
-        # Add currency formatting
-        formatted_data = []
-        for row in data:
-            formatted_row = []
-            for cell in row:
-                if isinstance(cell, (int, float)) and cell != 0:
-                    formatted_row.append(f"${cell:,.2f}")
-                else:
-                    formatted_row.append(str(cell))
-            formatted_data.append(formatted_row)
-        
-        return self.create_table(formatted_data)
+        try:
+            # Ensure data is a list of lists
+            if not isinstance(data, list) or not data:
+                return self.create_table([['No financial data available']])
+            
+            # Format currency values
+            formatted_data = []
+            for row in data:
+                if not isinstance(row, list):
+                    row = [row]
+                formatted_row = []
+                for cell in row:
+                    try:
+                        if isinstance(cell, (int, float)) and cell != 0:
+                            formatted_row.append(f"${cell:,.2f}")
+                        else:
+                            formatted_row.append(str(cell))
+                    except:
+                        formatted_row.append(str(cell))
+                formatted_data.append(formatted_row)
+            
+            return self.create_table(formatted_data)
+            
+        except Exception as e:
+            print(f"Error in create_financial_table: {str(e)}")  # Debug print
+            return self.create_table([['Error creating financial table']])
 
 class CodeBlockMaker:
     def __init__(self, colors):
@@ -346,6 +439,76 @@ class CodeBlockMaker:
         )
         
         return Paragraph(f"<b>{language.upper()}:</b><br/>{code}", code_style)
+
+class DocumentPage(PageTemplate):
+    def __init__(self, id, pageSize=A4):
+        self.pageWidth = pageSize[0]
+        self.pageHeight = pageSize[1]
+        frame = Frame(
+            72,  # x
+            72,  # y
+            self.pageWidth - 144,  # width
+            self.pageHeight - 144,  # height
+            leftPadding=0,
+            bottomPadding=0,
+            rightPadding=0,
+            topPadding=0,
+        )
+        PageTemplate.__init__(self, id, [frame])
+        
+    def beforeDrawPage(self, canvas, doc):
+        """Add header and footer to each page"""
+        canvas.saveState()
+        
+        # Simple header with college name
+        canvas.setFont('Helvetica-Bold', 16)
+        canvas.setFillColor(HexColor('#2C3E50'))  # Dark blue-gray
+        canvas.drawString(72, self.pageHeight - 72, doc.college_name.upper())
+        
+        # Double line below header - moved down by 10 points
+        canvas.setStrokeColor(HexColor('#2C3E50'))
+        canvas.setLineWidth(0.5)
+        canvas.line(72, self.pageHeight - 95, self.pageWidth - 72, self.pageHeight - 95)
+        canvas.line(72, self.pageHeight - 98, self.pageWidth - 72, self.pageHeight - 98)
+        
+        # Adjust frame position to prevent overlap
+        frame = Frame(
+            72,  # x
+            72,  # y
+            self.pageWidth - 144,  # width
+            self.pageHeight - 170,  # height - increased top margin
+            leftPadding=0,
+            bottomPadding=0,
+            rightPadding=0,
+            topPadding=0,
+        )
+        
+        # Thin border around page
+        canvas.setStrokeColor(HexColor('#BDC3C7'))  # Light gray
+        canvas.setLineWidth(0.5)
+        canvas.rect(36, 36, self.pageWidth - 72, self.pageHeight - 72)
+        
+        # Footer with page number and watermark
+        canvas.setFont('Times-Roman', 8)  # Using Times-Roman instead of Helvetica
+        canvas.setFillColor(HexColor('#95A5A6'))  # Gray
+        
+        # Left side: Page number
+        canvas.drawString(72, 50, f"Page {doc.page}")
+        
+        # Center: Watermark in slanted text
+        canvas.saveState()
+        watermark_text = "made by DazzloDocs"
+        watermark_width = canvas.stringWidth(watermark_text, 'Times-Roman', 8)
+        x_position = (self.pageWidth - watermark_width) / 2
+        canvas.translate(x_position, 50)
+        canvas.rotate(0)  # No rotation for now
+        canvas.drawString(0, 0, watermark_text)
+        canvas.restoreState()
+        
+        # Right side: Document title
+        canvas.drawRightString(self.pageWidth - 72, 50, doc.title)
+        
+        canvas.restoreState()
 
 class EnhancedDocumentGenerator:
     def __init__(self):
@@ -393,12 +556,84 @@ class EnhancedDocumentGenerator:
         })
     
     def add_table(self, section, data, title="Table"):
-        """Add a table to a section"""
+        """Add a table to a section with improved structure and spacing
+        
+        Args:
+            section (str): Section name where the table should be added
+            data (list or dict): Table data - can be either:
+                - List of lists (direct table data)
+                - Dict with 'headers' and 'rows' keys
+        """
         if section not in self.tables:
             self.tables[section] = []
+        
+        # Handle different data formats
+        if isinstance(data, list):
+            # Direct table data (list of lists)
+            table_data = data
+            headers = data[0] if data else []
+        elif isinstance(data, dict):
+            # Dictionary format with headers and rows
+            headers = data.get('headers', [])
+            rows = data.get('rows', [])
+            table_data = [headers] + rows if headers else rows
+        else:
+            # Fallback - create empty table
+            table_data = [['No data available']]
+            headers = ['No data available']
+        
+        # Ensure we have valid data
+        if not table_data or not table_data[0]:
+            table_data = [['No data available']]
+            headers = ['No data available']
+        
+        # Calculate column widths based on content
+        col_widths = []
+        for col in range(len(table_data[0])):
+            col_content = [str(row[col]) for row in table_data]
+            max_width = max(len(content) for content in col_content)
+            col_widths.append(min(max(max_width * 0.15 * inch, 1.5*inch), 3*inch))
+        
+        # Create table with calculated widths
+        table = Table(table_data, colWidths=col_widths)
+        
+        # Create professional table style with improved spacing
+        table_style = TableStyle([
+            # Header styling
+            ('BACKGROUND', (0, 0), (-1, 0), HexColor(self.colors['primary'])),
+            ('TEXTCOLOR', (0, 0), (-1, 0), white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            
+            # Content styling
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
+            ('TEXTCOLOR', (0, 1), (-1, -1), HexColor(self.colors['text'])),
+            
+            # Borders
+            ('GRID', (0, 0), (-1, -1), 0.5, HexColor(self.colors['border'])),
+            ('LINEBELOW', (0, 0), (-1, 0), 1, HexColor(self.colors['primary'])),
+            
+            # Cell padding
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+            
+            # Spacing between rows
+            ('LEADING', (0, 0), (-1, -1), 12),
+        ])
+        
+        table.setStyle(table_style)
+        
+        # Add spacer before table
         self.tables[section].append({
-            'data': data,
-            'title': title
+            'table': table,
+            'title': title,
+            'spacer': Spacer(1, 0.2*inch)  # Add space before table
         })
     
     def add_flowchart(self, section, nodes, edges, title):
@@ -421,69 +656,75 @@ class EnhancedDocumentGenerator:
         })
     
     def create_header_footer(self, canvas, doc):
-        """Create professional header and footer with Birla College branding"""
+        """Create professional header and footer"""
         canvas.saveState()
         width, height = A4
         
-        # Draw double border
-        canvas.setStrokeColor(HexColor(self.colors['border']))
-        # Outer border
-        canvas.rect(30, 30, width - 60, height - 60)
-        # Inner border
-        canvas.rect(35, 35, width - 70, height - 70)
-        
-        # Header with gradient effect
+        # Simple header with college name
+        canvas.setFont('Helvetica-Bold', 16)
         canvas.setFillColor(HexColor(self.colors['primary']))
-        canvas.rect(0, height - 42, width, 40, fill=1)
+        college_name = self.user_data.get('college_name', 'COLLEGE NAME').upper()
+        canvas.drawString(72, height - 72, college_name)
         
-        # Add logo to header
-        if os.path.exists('static/logo.png'):
-            img = PILImage.open('static/logo.png')
-            img_width, img_height = img.size
-            aspect = img_height / float(img_width)
-            canvas.drawImage('static/logo.png', 
-                           50, height - 35,  # Position
-                           width=25, height=25*aspect)  # Size
+        # Double line below header
+        canvas.setStrokeColor(HexColor(self.colors['primary']))
+        canvas.setLineWidth(0.5)
+        canvas.line(72, height - 85, width - 72, height - 85)
+        canvas.line(72, height - 88, width - 72, height - 88)
         
-        canvas.setFont('Helvetica-Bold', 12)
-        canvas.setFillColor(white)
-        canvas.drawString(85, height - 27, f"BK BIRLA COLLEGE - {self.user_data.get('subject', '')}")
+        # Thin border around page
+        canvas.setStrokeColor(HexColor(self.colors['border']))
+        canvas.setLineWidth(0.5)
+        canvas.rect(36, 36, width - 72, height - 72)
         
-        canvas.setFont('Helvetica', 10)
-        canvas.drawRightString(width - 50, height - 27, f"{self.template['name']}")
+        # Footer with page number and watermark
+        canvas.setFont('Times-Roman', 8)  # Using Times-Roman instead of Helvetica
+        canvas.setFillColor(HexColor(self.colors['secondary']))
         
-        # Footer
-        canvas.setFont('Helvetica', 9)
-        canvas.setFillColor(HexColor(self.colors['text']))
-        canvas.drawString(50, 30, f"Student: {self.user_data.get('student_name', '')} | Class: {self.user_data.get('class', '')} | Roll: {self.user_data.get('roll_number', '')}")
-        canvas.drawRightString(width - 50, 30, f"Page {canvas.getPageNumber()} | Generated: {datetime.now().strftime('%Y-%m-%d')}")
+        # Left side: Page number
+        canvas.drawString(72, 50, f"Page {canvas.getPageNumber()}")
+        
+        # Center: Watermark in slanted text
+        canvas.saveState()
+        watermark_text = "made by DazzloDocs"
+        watermark_width = canvas.stringWidth(watermark_text, 'Times-Roman', 8)
+        x_position = (width - watermark_width) / 2
+        canvas.translate(x_position, 50)
+        canvas.rotate(0)  # No rotation for now
+        canvas.drawString(0, 0, watermark_text)
+        canvas.restoreState()
+        
+        # Right side: Document title
+        title_text = f"{self.user_data.get('subject', '')} | {self.user_data.get('student_name', '')}"
+        canvas.drawRightString(width - 72, 50, title_text)
         
         canvas.restoreState()
-    
+
     def create_title_page(self, story):
-        """Create the classic Birla College title page with blue header and red title"""
+        """Create a simple and clean title page"""
         # Add initial spacing
-        story.append(Spacer(1, inch))
+        story.append(Spacer(1, 2*inch))
         
-        # College Name (Blue)
+        # College Name
         college_style = ParagraphStyle(
             'CollegeHeader',
             parent=self.styles['Title'],
             fontSize=24,
-            textColor=HexColor('#0000FF'),  # Pure blue
+            textColor=HexColor(self.colors['primary']),
             alignment=TA_CENTER,
-            spaceAfter=60
+            spaceAfter=30
         )
-        story.append(Paragraph("BK BIRLA COLLEGE", college_style))
+        college_name = self.user_data.get('college_name', 'COLLEGE NAME').upper()
+        story.append(Paragraph(college_name, college_style))
         
-        # Document Title (Red)
+        # Document Title
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=self.styles['Title'],
-            fontSize=24,
-            textColor=HexColor('#FF0000'),  # Pure red
+            fontSize=20,
+            textColor=HexColor(self.colors['secondary']),
             alignment=TA_CENTER,
-            spaceAfter=30
+            spaceAfter=20
         )
         story.append(Paragraph(self.user_data.get('subject', '').upper(), title_style))
         
@@ -493,13 +734,13 @@ class EnhancedDocumentGenerator:
                 'TopicStyle',
                 parent=self.styles['Normal'],
                 fontSize=14,
-                textColor=black,
-                alignment=TA_LEFT,
-                spaceAfter=20
+                textColor=HexColor(self.colors['text']),
+                alignment=TA_CENTER,
+                spaceAfter=40
             )
-            story.append(Paragraph(f"Assignment Topic: {self.user_data.get('assignment_topic', '')}", topic_style))
+            story.append(Paragraph(f"Topic: {self.user_data.get('assignment_topic', '')}", topic_style))
         
-        # Personal Information Table
+        # Personal Information Table with simpler styling
         data = [
             ['Student Name:', self.user_data.get('student_name', '')],
             ['Class:', self.user_data.get('class', '')],
@@ -510,40 +751,25 @@ class EnhancedDocumentGenerator:
         # Add optional fields if they exist
         optional_fields = [
             ('Project Date:', 'project_date'),
-            ('Submission Date:', 'submission_date'),
-            ('Contact Number:', 'contact_number')
+            ('Submission Date:', 'submission_date')
         ]
         
         for label, field in optional_fields:
             if self.user_data.get(field):
                 data.append([label, self.user_data.get(field)])
         
-        # Create table with proper styling
+        # Create table with clean styling
         table = Table(data, colWidths=[2*inch, 4*inch])
         table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 11),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-            ('GRID', (0, 0), (-1, -1), 1, black)
+            ('TEXTCOLOR', (0, 0), (-1, -1), HexColor(self.colors['text'])),
+            ('GRID', (0, 0), (-1, -1), 0.5, HexColor(self.colors['border']))
         ]))
         
         story.append(table)
-        
-        # Add self introduction if provided
-        if self.user_data.get('self_introduction'):
-            story.append(Spacer(1, 0.5*inch))
-            intro_style = ParagraphStyle(
-                'IntroStyle',
-                parent=self.styles['Normal'],
-                fontSize=11,
-                textColor=black,
-                alignment=TA_JUSTIFY,
-                spaceAfter=20
-            )
-            story.append(Paragraph("Self Introduction:", intro_style))
-            story.append(Paragraph(self.user_data.get('self_introduction', ''), intro_style))
-        
         story.append(PageBreak())
     
     def create_content_pages(self, story):
@@ -603,152 +829,66 @@ class EnhancedDocumentGenerator:
             section_title = section_names.get(section, section.replace('_', ' ').title())
             story.append(Paragraph(section_title, section_style))
             
-            # Section content with better default text
-            default_content = {
-                'introduction': 'This section provides an introduction to the topic and outlines the scope of the document.',
-                'main_content': 'This section contains the main content and analysis of the topic.',
-                'analysis': 'This section provides detailed analysis and interpretation of the data and findings.',
-                'conclusion': 'This section summarizes the key findings and provides concluding remarks.',
-                'references': 'List of references and sources used in this document.',
-                'project_overview': 'This section provides an overview of the project, its goals, and scope.',
-                'objectives': 'This section outlines the specific objectives and goals of the project.',
-                'methodology': 'This section describes the methods and approaches used in the project.',
-                'implementation': 'This section details the implementation process and technical details.',
-                'results': 'This section presents the results and findings of the project.',
-                'appendix': 'This section contains additional supporting materials and data.',
-                'case_overview': 'This section provides an overview of the case study and its context.',
-                'problem_analysis': 'This section analyzes the problems and challenges identified.',
-                'solutions': 'This section presents proposed solutions and approaches.',
-                'recommendations': 'This section provides recommendations and next steps.',
-                'abstract': 'This section provides a concise summary of the research and findings.',
-                'literature_review': 'This section reviews relevant literature and previous research.',
-                'discussion': 'This section discusses the implications and significance of the findings.',
-                'executive_summary': 'This section provides a high-level summary for executives.',
-                'key_points': 'This section highlights the key points and main takeaways.',
-                'findings': 'This section presents the main findings and discoveries.',
-                'objective': 'This section states the objective and purpose of the experiment.',
-                'materials': 'This section lists the materials and equipment used.',
-                'procedure': 'This section describes the experimental procedure and methodology.',
-                'observations': 'This section records the observations and data collected.',
-                'calculations': 'This section shows the calculations and data analysis.',
-                'business_overview': 'This section provides an overview of the business concept.',
-                'market_analysis': 'This section analyzes the market and competitive landscape.',
-                'strategy': 'This section outlines the business strategy and approach.',
-                'financial_plan': 'This section presents the financial projections and plan.',
-                'system_overview': 'This section provides an overview of the system architecture.',
-                'architecture': 'This section describes the system architecture and design.',
-                'testing': 'This section details the testing approach and results.',
-                'deployment': 'This section describes the deployment process and requirements.',
-                'maintenance': 'This section outlines the maintenance and support requirements.'
-            }
+            # Add section content with proper spacing
+            content = self.content.get(section, '')
+            if content:
+                para_style = ParagraphStyle(
+                    'Content',
+                    parent=self.styles['Normal'],
+                    fontSize=11,
+                    spaceAfter=12,  # Increased spacing after paragraphs
+                    alignment=TA_JUSTIFY,
+                    leading=14
+                )
+                paragraphs = content.split('\n\n')
+                for para in paragraphs:
+                    if para.strip():
+                        story.append(Paragraph(para.strip(), para_style))
             
-            content = self.content.get(section, default_content.get(section, f"Content for {section_title} section."))
-            
-            # Split content into paragraphs
-            paragraphs = content.split('\n\n')
-            for para in paragraphs:
-                if para.strip():
-                    para_style = ParagraphStyle(
-                        'Content',
-                        parent=self.styles['Normal'],
-                        fontSize=11,
-                        spaceAfter=10,
-                        alignment=TA_JUSTIFY,
-                        leading=14
-                    )
-                    story.append(Paragraph(para.strip(), para_style))
-            
-            # Add charts for this section
-            if section in self.charts:
-                for chart in self.charts[section]:
-                    story.append(Spacer(1, 15))
-                    chart_title_style = ParagraphStyle(
-                        'ChartTitle',
-                        parent=self.styles['Normal'],
-                        fontSize=12,
-                        alignment=TA_CENTER,
-                        textColor=HexColor(self.colors['secondary']),
-                        fontName='Helvetica-Bold'
-                    )
-                    story.append(Paragraph(chart['title'], chart_title_style))
-                    story.append(Spacer(1, 5))
-                    
-                    img = Image(chart['buffer'], width=6*inch, height=3.5*inch)
-                    story.append(img)
-            
-            # Add tables for this section
+            # Add tables for this section with proper spacing
             if section in self.tables:
-                for table_data in self.tables[section]:
-                    story.append(Spacer(1, 15))
-                    table_title_style = ParagraphStyle(
-                        'TableTitle',
-                        parent=self.styles['Normal'],
-                        fontSize=12,
-                        alignment=TA_CENTER,
-                        textColor=HexColor(self.colors['secondary']),
-                        fontName='Helvetica-Bold'
-                    )
-                    story.append(Paragraph(table_data['title'], table_title_style))
-                    story.append(Spacer(1, 5))
+                for table_info in self.tables[section]:
+                    # Add spacer before table
+                    story.append(Spacer(1, 0.3*inch))
                     
-                    table = self.table_maker.create_table(table_data['data'])
-                    story.append(table)
-            
-            # Add flowcharts for this section
-            if section in self.flowcharts:
-                for flowchart in self.flowcharts[section]:
-                    story.append(Spacer(1, 15))
-                    flowchart_title_style = ParagraphStyle(
-                        'FlowchartTitle',
-                        parent=self.styles['Normal'],
-                        fontSize=12,
-                        alignment=TA_CENTER,
-                        textColor=HexColor(self.colors['secondary']),
-                        fontName='Helvetica-Bold'
-                    )
-                    story.append(Paragraph(flowchart['title'], flowchart_title_style))
-                    story.append(Spacer(1, 5))
+                    # Add table title if provided
+                    if table_info.get('title'):
+                        title_style = ParagraphStyle(
+                            'TableTitle',
+                            parent=self.styles['Normal'],
+                            fontSize=12,
+                            textColor=HexColor(self.colors['primary']),
+                            spaceAfter=10,
+                            alignment=TA_LEFT,
+                            fontName='Helvetica-Bold'
+                        )
+                        story.append(Paragraph(table_info['title'], title_style))
                     
-                    img = Image(flowchart['buffer'], width=6*inch, height=4*inch)
-                    story.append(img)
+                    # Add the table
+                    story.append(table_info['table'])
+                    
+                    # Add spacer after table
+                    story.append(Spacer(1, 0.3*inch))
             
-            # Add code blocks for this section
-            if section in self.code_blocks:
-                for code_block in self.code_blocks[section]:
-                    story.append(Spacer(1, 15))
-                    code_element = self.code_maker.create_code_block(
-                        code_block['code'], 
-                        code_block['language']
-                    )
-                    story.append(code_element)
-            
-            story.append(Spacer(1, 20))
+            # Add spacer after section
+            story.append(Spacer(1, 0.2*inch))
     
     def generate_pdf(self, output=None):
         """Generate the enhanced PDF document"""
         if output is None:
             output = f"DazzloDocs_{self.user_data.get('student_name', 'Student')}_{self.user_data.get('subject', 'Document')}.pdf"
         
-        # Handle BytesIO output
-        if hasattr(output, 'write'):
-            doc = SimpleDocTemplate(
-                output,
-                pagesize=A4,
-                rightMargin=72,
-                leftMargin=72,
-                topMargin=72,
-                bottomMargin=72
-            )
-        else:
-            doc = SimpleDocTemplate(
-                output,
-                pagesize=A4,
-                rightMargin=72,
-                leftMargin=72,
-                topMargin=72,
-                bottomMargin=72
-            )
+        # Create document with standard margins
+        doc = SimpleDocTemplate(
+            output,
+            pagesize=A4,
+            rightMargin=72,
+            leftMargin=72,
+            topMargin=72,
+            bottomMargin=72
+        )
         
+        # Build story
         story = []
         
         # Create title page
@@ -757,8 +897,12 @@ class EnhancedDocumentGenerator:
         # Create content pages
         self.create_content_pages(story)
         
-        # Build PDF
-        doc.build(story, onFirstPage=self.create_header_footer, onLaterPages=self.create_header_footer)
+        # Build document with header/footer
+        doc.build(
+            story,
+            onFirstPage=self.create_header_footer,
+            onLaterPages=self.create_header_footer
+        )
         
         return output
 

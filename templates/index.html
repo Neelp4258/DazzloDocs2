@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DazzloDocs - Professional Document Generator</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <img src="/static/logo.png" alt="DazzloDocs Logo" class="logo">
+            <div class="logo" style="display: flex !important; visibility: visible !important;">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="DazzloDocs Logo" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
             <div class="title">
                 <h1>DazzloDocs</h1>
                 <h2>Professional Document Generator</h2>
@@ -23,96 +26,110 @@
             <a href="/contact">Contact</a>
         </nav>
 
-        <form id="documentForm" class="document-form">
-            <!-- Personal Information -->
-            <section class="form-section">
-                <h3>Personal Information</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="student_name">Full Name*</label>
-                        <input type="text" id="student_name" name="student_name" required>
+        <div class="content-wrapper">
+            <form id="documentForm" class="document-form">
+                <!-- Personal Information -->
+                <section class="form-section">
+                    <h3>Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="student_name">Full Name*</label>
+                            <input type="text" id="student_name" name="student_name" required placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="college_name">College/School Name*</label>
+                            <input type="text" id="college_name" name="college_name" required placeholder="Enter your college or school name">
+                        </div>
+                        <div class="form-group">
+                            <label for="class">Class*</label>
+                            <input type="text" id="class" name="class" required placeholder="Enter your class">
+                        </div>
+                        <div class="form-group">
+                            <label for="roll_number">Roll Number*</label>
+                            <input type="text" id="roll_number" name="roll_number" required placeholder="Enter your roll number">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject*</label>
+                            <input type="text" id="subject" name="subject" required placeholder="Enter subject name">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject_teacher">Subject Teacher*</label>
+                            <input type="text" id="subject_teacher" name="subject_teacher" required placeholder="Enter teacher's name">
+                        </div>
+                        <div class="form-group">
+                            <label for="assignment_topic">Assignment Topic*</label>
+                            <input type="text" id="assignment_topic" name="assignment_topic" required placeholder="Enter assignment topic">
+                        </div>
+                        <!-- Optional Fields -->
+                        <div class="form-group">
+                            <label for="project_date">Project Date</label>
+                            <input type="date" id="project_date" name="project_date">
+                        </div>
+                        <div class="form-group">
+                            <label for="submission_date">Submission Date</label>
+                            <input type="date" id="submission_date" name="submission_date">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_number">Contact Number</label>
+                            <input type="tel" id="contact_number" name="contact_number" placeholder="Enter contact number">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="class">Class*</label>
-                        <input type="text" id="class" name="class" required>
+                    <div class="form-group full-width">
+                        <label for="self_introduction">Self Introduction</label>
+                        <textarea id="self_introduction" name="self_introduction" rows="4" placeholder="Enter your self introduction (optional)"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="roll_number">Roll Number*</label>
-                        <input type="text" id="roll_number" name="roll_number" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="subject">Subject*</label>
-                        <input type="text" id="subject" name="subject" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="subject_teacher">Subject Teacher*</label>
-                        <input type="text" id="subject_teacher" name="subject_teacher" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="assignment_topic">Assignment Topic*</label>
-                        <input type="text" id="assignment_topic" name="assignment_topic" required>
-                    </div>
-                    <!-- Optional Fields -->
-                    <div class="form-group">
-                        <label for="project_date">Project Date</label>
-                        <input type="date" id="project_date" name="project_date">
-                    </div>
-                    <div class="form-group">
-                        <label for="submission_date">Submission Date</label>
-                        <input type="date" id="submission_date" name="submission_date">
-                    </div>
-                    <div class="form-group">
-                        <label for="contact_number">Contact Number</label>
-                        <input type="tel" id="contact_number" name="contact_number">
-                    </div>
-                </div>
-                <div class="form-group full-width">
-                    <label for="self_introduction">Self Introduction</label>
-                    <textarea id="self_introduction" name="self_introduction" rows="4"></textarea>
-                </div>
-            </section>
+                </section>
 
-            <!-- Document Template Selection -->
-            <section class="form-section">
-                <h3>Document Template</h3>
-                <div class="form-group">
-                    <label for="template">Select Template*</label>
-                    <select id="template" name="template" required>
-                        <!-- Populated by JavaScript -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="color_scheme">Color Scheme*</label>
-                    <select id="color_scheme" name="color_scheme" required>
-                        <!-- Populated by JavaScript -->
-                    </select>
-                </div>
-            </section>
+                <!-- Document Template Selection -->
+                <section class="form-section">
+                    <h3>Document Template</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="template">Select Template*</label>
+                            <select id="template" name="template" required>
+                                <option value="">Select a template...</option>
+                                <option value="assignment">Academic Assignment</option>
+                                <option value="project_report">Project Report</option>
+                                <option value="case_study">Case Study</option>
+                                <option value="research_paper">Research Paper</option>
+                                <option value="presentation_report">Presentation Report</option>
+                                <option value="lab_report">Laboratory Report</option>
+                                <option value="business_plan">Business Plan</option>
+                                <option value="technical_documentation">Technical Documentation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="color_scheme">Color Scheme*</label>
+                            <select id="color_scheme" name="color_scheme" required>
+                                <option value="">Select a color scheme...</option>
+                                <option value="professional">Professional</option>
+                                <option value="modern">Modern</option>
+                                <option value="classic">Classic</option>
+                                <option value="elegant">Elegant</option>
+                                <option value="tech_blue">Tech Blue</option>
+                                <option value="cyber_purple">Cyber Purple</option>
+                                <option value="neon_green">Neon Green</option>
+                                <option value="sunset_orange">Sunset Orange</option>
+                                <option value="ocean_teal">Ocean Teal</option>
+                                <option value="midnight_black">Midnight Black</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Dynamic Content Sections -->
-            <section class="form-section" id="contentSections">
-                <h3>Document Content</h3>
-                <button type="button" class="add-section-btn" onclick="addContentSection()">Add Content Section</button>
-                <!-- Dynamically populated based on template selection -->
-            </section>
+                <!-- Dynamic Content Sections -->
+                <section class="form-section" id="contentSections">
+                    <h3>Document Content</h3>
+                    <div id="templateSections">
+                        <!-- Dynamically populated based on template selection -->
+                    </div>
+                </section>
 
-            <!-- Advanced Features -->
-            <section class="form-section">
-                <h3>Advanced Features</h3>
-                <div class="feature-buttons">
-                    <button type="button" onclick="addChart()">Add Chart</button>
-                    <button type="button" onclick="addTable()">Add Table</button>
-                    <button type="button" onclick="addCodeBlock()">Add Code Block</button>
-                </div>
-                <div id="advancedFeatures">
-                    <!-- Dynamically populated when features are added -->
-                </div>
-            </section>
-
-            <button type="submit" class="generate-btn">Generate Document</button>
-        </form>
+                <button type="submit" class="generate-btn">Generate Document</button>
+            </form>
+        </div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html> 
