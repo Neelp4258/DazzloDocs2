@@ -33,7 +33,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Initialize Flask app
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='static', template_folder='Templates')
 app.config.from_object(Config)
 
 # Initialize components

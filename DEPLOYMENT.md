@@ -1,7 +1,8 @@
 # DazzloDocs Converter - Deployment Guide
 
-## Issue Fixed ✅
+## Issues Fixed ✅
 
+### 1. Gunicorn Command Not Found
 The "gunicorn: command not found" error has been resolved by:
 
 1. **Added gunicorn to requirements.txt**: Added `gunicorn==21.2.0` to the dependencies
@@ -9,6 +10,13 @@ The "gunicorn: command not found" error has been resolved by:
 3. **Created gunicorn.conf.py**: Added proper production configuration
 4. **Updated Procfile**: Now uses `gunicorn -c gunicorn.conf.py app:app`
 5. **Updated docker-compose.yml**: Fixed Railway deployment command
+
+### 2. Template Rendering Error (502 Error)
+The template rendering error has been resolved by:
+
+1. **Fixed Flask template folder configuration**: Updated Flask app to use `template_folder='Templates'`
+2. **Updated directory creation**: Fixed Dockerfile and run.py to create the correct `Templates` directory
+3. **Consistent naming**: Ensured all references use the capitalized `Templates` directory
 
 ## Deployment Options
 

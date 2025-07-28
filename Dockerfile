@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p uploads converted templates static
+RUN mkdir -p uploads converted Templates static
 
 # Set permissions
 RUN chmod +x app.py
